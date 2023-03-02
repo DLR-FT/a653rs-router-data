@@ -1,7 +1,12 @@
 from sys import argv
-from pandas import DataFrame, read_csv
+from pandas import DataFrame, Series, read_csv
 
 def decode():
   df = read_csv(argv[1])
-  gpio = df[["Time [s]"] + ["Channel %d" % c for c in range(0, 8)]]
-  print(gpio)
+  gpios = df[["Channel %d" % c for c in range(1, 8)]]
+  df['decoded'] = gpios.apply(decode_bytes, axis=1)
+  df = df[["Time [s]", "decoded"]]
+  print(df)
+
+def decode_bytes(c: Series) -> int:
+  return sum(x<<i for x, i in enumerate(c[::-1]))
