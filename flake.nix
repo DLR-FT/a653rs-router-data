@@ -15,9 +15,7 @@
         };
         pythonPackages = p: with p; [
           black
-          pandas
-          seaborn
-          numpy
+          poetry
           python-lsp-server
         ];
         python = pkgs.python3.withPackages pythonPackages;

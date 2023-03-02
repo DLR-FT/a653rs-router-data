@@ -44,3 +44,23 @@ warn_redundant_casts = true
 disallow_untyped_calls = true
 disallow_untyped_defs = true
 no_implicit_optional = true
+
+[tool.poetry]
+name = "master-thesis-data"
+version = "0.1.0"
+description = ""
+authors = ["dadada <dadada@dadada.li>"]
+readme = "README.md"
+packages = [{include = "master_thesis_data"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pandas = "^1.5.3"
+seaborn = "^0.12.2"
+numpy = "^1.24.2"
+matplotlib = "^3.7.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
