@@ -65,7 +65,7 @@ python-lsp-server = "^1.7.1"
 black = "^23.1.0"
 
 [tool.poetry.scripts]
-decode = "master_thesis_data:decode"
+decode-file = "master_thesis_data:decode_file"
 
 [build-system]
 requires = ["poetry-core"]

@@ -1,4 +1,4 @@
-from sys import argv
+from sys import argv, stdout
 from pandas import DataFrame, Series, read_csv
 from enum import Enum
 
@@ -23,14 +23,13 @@ class TraceEvent(Enum):
             None
 
 
-def decode():
-    df = read_csv(argv[1])
+def decode(df: DataFrame) -> DataFrame:
     df["data"] = df[channel_labels(0, 4)].apply(decode_bytes, axis=1)
     df["event"] = df[channel_labels(4, 8)].apply(decode_bytes, axis=1)
     df["event"] = df["event"].apply(TraceEvent.try_from_int)
     df = df[["Time [s]", "event", "data"]]
     df = df.loc[df["event"].shift() != df["event"]]
-    print(df.to_csv())
+    return df
 
 
 def decode_bytes(c: Series) -> int:
@@ -39,3 +38,13 @@ def decode_bytes(c: Series) -> int:
 
 def channel_labels(start, stop) -> [str]:
     return ["Channel %d" % c for c in range(start, stop)]
+
+
+# Entry functions
+def decode_file():
+    df = read_csv(argv[1])
+    if len(argv) > 2:
+        output = argv[2]
+    else:
+        output = stdout
+    decode(df).to_csv(path_or_buf=output)
