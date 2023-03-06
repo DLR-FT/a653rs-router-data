@@ -68,7 +68,8 @@ def delay_echo_recv(df: DataFrame, event: TraceType, echo: EchoEvent) -> DataFra
 # Gets the mean delay from the start to the end of an event.
 def mean_delay_events(df: DataFrame) -> DataFrame:
     diff = df.groupby(["type"], group_keys=False).apply(diff_start_stop)
-    diff = diff[["delay", "type"]].groupby(["type"], group_keys=False).agg(["mean", "var"], axis="columns")
+    diff = diff.groupby(["type"], group_keys=False).mean()
+    diff = diff[["delay"]]
     return diff
 
 
