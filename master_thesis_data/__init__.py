@@ -3,10 +3,10 @@ from pandas import DataFrame, Series, read_csv
 from enum import Enum
 
 
-class TraceEvent(Enum):
+class TraceType(Enum):
     Noop = 0
-    NetworkSend = 1
-    NetworkReceive = 2
+    NetworkSend = 1  # Occurs when send is started
+    NetworkReceive = 2  # Occurs when receive is complete
     ApexSend = 3
     ApexReceive = 4
     ForwardFromNetwork = 5
@@ -15,6 +15,7 @@ class TraceEvent(Enum):
     ForwardToApex = 8
     VirtualLinkScheduled = 9
     Echo = 10
+    Done = 11  # End of forwarding loop
 
     @classmethod
     def try_from_int(cls, val):
@@ -25,10 +26,10 @@ class TraceEvent(Enum):
 
 
 class EchoEvent(Enum):
-    EchoRequestSend = 0
-    EchoRequestReceived = 1
-    EchoReplySend = 2
-    EchoReplyReceived = 3
+    EchoRequestSend = 0  # Occurs when send is started
+    EchoRequestReceived = 1  # Occurs when receive is complete
+    EchoReplySend = 2  # Occurs when send is started
+    EchoReplyReceived = 3  # Occurs when receive is complete
 
     @classmethod
     def try_from_int(cls, val):
@@ -40,47 +41,43 @@ class EchoEvent(Enum):
 
 def decode(df: DataFrame) -> DataFrame:
     df = df.rename(columns={"Time [s]": "t"})
-    df["data"] = df[channel_labels(0, 4)].apply(decode_bytes, axis=1)
-    df["event"] = df[channel_labels(4, 8)].apply(decode_bytes, axis=1)
-    df["event"] = df["event"].apply(TraceEvent.try_from_int)
-    df["echo"] = df[["event", "data"]].apply(decode_echo, axis=1)
+    df["data"] = df[channel_labels(1, 5)].apply(decode_bytes, axis=1)
+    df["end"] = df[channel_labels(0, 1)].astype(bool)
+    df["type"] = df[channel_labels(5, 8)].apply(decode_bytes, axis=1)
+    #df["type"] = df["type"].apply(TraceType.try_from_int)
+    #df["echo"] = df[["type", "data"]].apply(decode_echo, axis=1)
     # Eliminate duplicates
-    df = df.loc[df["event"].shift() != df["event"]]
-    df = df[["t", "event", "data", "echo"]]
-
-    df["delay_echo_req_apex_recv"] = delay_echo_send(df, EchoEvent.EchoRequestSend, TraceEvent.ApexReceive)
-    df["delay_echo_repl_apex_recv"] = delay_echo_send(df, EchoEvent.EchoReplySend, TraceEvent.ApexReceive)
-
-    df["delay_apex_send_echo_req"] = delay_echo_send(df, TraceEvent.ApexSend, EchoEvent.EchoRequestReceived)
-    df["delay_apex_send_echo_repl"] = delay_echo_send(df, TraceEvent.ApexSend, EchoEvent.EchoReplyReceived)
-
-    df["delay_next"] = delay_next(df)
+    df = df.loc[df["type"].shift() != df["type"]]
+    df = df[["t", "end", "type", "data"]]
 
     return df
 
 
-def delay_echo_send(df: DataFrame, echo: EchoEvent, event: TraceEvent) -> DataFrame:
+def delay_echo_send(df: DataFrame, echo: EchoEvent, event: TraceType) -> DataFrame:
     echos = df["t"].where(df["echo"] == echo)
-    events = df["t"].where(df["event"] == event)
+    events = df["t"].where(df["type"] == event)
     return events.reindex_like(echos) - echos
 
 
-def delay_echo_recv(df: DataFrame, event: TraceEvent, echo: EchoEvent) -> DataFrame:
+def delay_echo_recv(df: DataFrame, event: TraceType, echo: EchoEvent) -> DataFrame:
     echos = df["t"].where(df["echo"] == echo)
-    events = df["t"].where(df["event"] == event)
-    return events.reindex_like(echos) - echos
+    events = df["t"].where(df["type"] == event)
+    return echos - events.reindex_like(echos)
 
 
-# Gets delays from an event type to the next consecutive event.
-def delay_next(df: DataFrame) -> DataFrame:
-    return df["t"].shift(-1) - df["t"]
+# Gets the mean delay from the start to the end of an event.
+def mean_delay_events(df: DataFrame) -> DataFrame:
+    diff = df.groupby(["type"], group_keys=False).apply(diff_start_stop)
+    diff = diff.groupby(["type"], group_keys=False).mean()
+    diff = diff[["delay"]]
+    return diff
 
 
-# Get delays between two consecutive event types
-def delay_events(df: DataFrame, event_l: TraceEvent, event_r: TraceEvent) -> DataFrame:
-    l = df["t"].where(df["event"] == event_l)
-    r = df["t"].where(df["event"] == event_r)
-    return r.reindex_like(l) - l
+def diff_start_stop(r: DataFrame) -> DataFrame:
+    end = r.where(r["end"] == True)
+    begin = r.where(r["end"] == False)
+    r["delay"] = end["t"].reindex_like(begin) - begin["t"]
+    return r
 
 
 def decode_bytes(c: Series) -> int:
@@ -92,7 +89,7 @@ def channel_labels(start, stop) -> [str]:
 
 
 def decode_echo(df: Series) -> EchoEvent | None:
-    if df[0] is TraceEvent.Echo:
+    if df[0] is TraceType.Echo:
         return EchoEvent.try_from_int(df[1])
     else:
         return None
@@ -106,3 +103,12 @@ def decode_file():
     else:
         output = stdout
     decode(df).to_csv(path_or_buf=output)
+
+
+def mean_delay():
+    df = read_csv(argv[1])
+    if len(argv) > 2:
+        output = argv[2]
+    else:
+        output = stdout
+    mean_delay_events(decode(df)).to_csv(path_or_buf=output)
