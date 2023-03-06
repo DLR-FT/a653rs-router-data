@@ -39,13 +39,34 @@ class EchoEvent(Enum):
 
 
 def decode(df: DataFrame) -> DataFrame:
+    df = df.rename(columns={"Time [s]": "t"})
     df["data"] = df[channel_labels(0, 4)].apply(decode_bytes, axis=1)
     df["event"] = df[channel_labels(4, 8)].apply(decode_bytes, axis=1)
     df["event"] = df["event"].apply(TraceEvent.try_from_int)
     df["echo"] = df[["event", "data"]].apply(decode_echo, axis=1)
-    df = df[["Time [s]", "event", "data", "echo"]]
+    # Eliminate duplicates
     df = df.loc[df["event"].shift() != df["event"]]
+    df = df[["t", "event", "data", "echo"]]
+
+    df["delay_echo_req_apex_recv"] = delay_echo_send(df, EchoEvent.EchoRequestSend, TraceEvent.ApexReceive)
+    df["delay_echo_repl_apex_recv"] = delay_echo_send(df, EchoEvent.EchoReplySend, TraceEvent.ApexReceive)
+
+    df["delay_apex_send_echo_req"] = delay_echo_send(df, TraceEvent.ApexSend, EchoEvent.EchoRequestReceived)
+    df["delay_apex_send_echo_repl"] = delay_echo_send(df, TraceEvent.ApexSend, EchoEvent.EchoReplyReceived)
+
     return df
+
+
+def delay_echo_send(df: DataFrame, echo: EchoEvent, event: TraceEvent) -> DataFrame:
+    echos = df["t"].where(df["echo"] == echo)
+    events = df["t"].where(df["event"] == event)
+    return events - echos.reindex_like(events)
+
+
+def delay_echo_recv(df: DataFrame, event: TraceEvent, echo: EchoEvent) -> DataFrame:
+    echos = df["t"].where(df["echo"] == echo)
+    events = df["t"].where(df["event"] == event)
+    return echos - events.reindex_like(echos)
 
 
 def decode_bytes(c: Series) -> int:
