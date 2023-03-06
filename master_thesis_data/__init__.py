@@ -25,10 +25,10 @@ class TraceEvent(Enum):
 
 
 class EchoEvent(Enum):
-    EchoRequestSend = 0,
-    EchoRequestReceived = 1,
-    EchoReplySend = 2,
-    EchoReplyReceived = 3,
+    EchoRequestSend = 0
+    EchoRequestReceived = 1
+    EchoReplySend = 2
+    EchoReplyReceived = 3
 
     @classmethod
     def try_from_int(cls, val):
@@ -56,6 +56,13 @@ def channel_labels(start, stop) -> [str]:
     return ["Channel %d" % c for c in range(start, stop)]
 
 
+def decode_echo(df: Series) -> EchoEvent | None:
+    if df[0] is TraceEvent.Echo:
+        return EchoEvent.try_from_int(df[1])
+    else:
+        return None
+
+
 # Entry functions
 def decode_file():
     df = read_csv(argv[1])
@@ -64,10 +71,3 @@ def decode_file():
     else:
         output = stdout
     decode(df).to_csv(path_or_buf=output)
-
-
-def decode_echo(df: Series) -> EchoEvent|None:
-    if df[0] is TraceEvent.Echo:
-        return EchoEvent.try_from_int(df[1])
-    else:
-        return None
