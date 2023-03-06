@@ -54,19 +54,33 @@ def decode(df: DataFrame) -> DataFrame:
     df["delay_apex_send_echo_req"] = delay_echo_send(df, TraceEvent.ApexSend, EchoEvent.EchoRequestReceived)
     df["delay_apex_send_echo_repl"] = delay_echo_send(df, TraceEvent.ApexSend, EchoEvent.EchoReplyReceived)
 
+    df["delay_next"] = delay_next(df)
+
     return df
 
 
 def delay_echo_send(df: DataFrame, echo: EchoEvent, event: TraceEvent) -> DataFrame:
     echos = df["t"].where(df["echo"] == echo)
     events = df["t"].where(df["event"] == event)
-    return events - echos.reindex_like(events)
+    return events.reindex_like(echos) - echos
 
 
 def delay_echo_recv(df: DataFrame, event: TraceEvent, echo: EchoEvent) -> DataFrame:
     echos = df["t"].where(df["echo"] == echo)
     events = df["t"].where(df["event"] == event)
-    return echos - events.reindex_like(echos)
+    return events.reindex_like(echos) - echos
+
+
+# Gets delays from an event type to the next consecutive event.
+def delay_next(df: DataFrame) -> DataFrame:
+    return df["t"].shift(-1) - df["t"]
+
+
+# Get delays between two consecutive event types
+def delay_events(df: DataFrame, event_l: TraceEvent, event_r: TraceEvent) -> DataFrame:
+    l = df["t"].where(df["event"] == event_l)
+    r = df["t"].where(df["event"] == event_r)
+    return r.reindex_like(l) - l
 
 
 def decode_bytes(c: Series) -> int:
