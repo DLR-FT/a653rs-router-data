@@ -44,8 +44,8 @@ def decode(df: DataFrame) -> DataFrame:
     df["data"] = df[channel_labels(1, 5)].apply(decode_bytes, axis=1)
     df["end"] = df[channel_labels(0, 1)].astype(bool)
     df["type"] = df[channel_labels(5, 8)].apply(decode_bytes, axis=1)
-    #df["type"] = df["type"].apply(TraceType.try_from_int)
-    #df["echo"] = df[["type", "data"]].apply(decode_echo, axis=1)
+    # df["type"] = df["type"].apply(TraceType.try_from_int)
+    # df["echo"] = df[["type", "data"]].apply(decode_echo, axis=1)
     # Eliminate duplicates
     df = df.loc[df["type"].shift() != df["type"]]
     df = df[["t", "end", "type", "data"]]
@@ -67,9 +67,23 @@ def delay_echo_recv(df: DataFrame, event: TraceType, echo: EchoEvent) -> DataFra
 
 # Gets the mean delay from the start to the end of an event.
 def mean_delay_events(df: DataFrame) -> DataFrame:
-    diff = df.groupby(["type"], group_keys=False).apply(diff_start_stop)
+    diff = delays_type(df)
     diff = diff.groupby(["type"], group_keys=False).mean()
     diff = diff[["delay"]]
+    return diff
+
+
+# Gets the jitter for each event.
+def jitter_events(df: DataFrame) -> DataFrame:
+    diff = delays_type(df)
+    diff = diff.groupby(["type"], group_keys=False).var()
+    diff = diff[["delay"]]
+    return diff
+
+
+# Gets the delays grouped by event type
+def delays_type(df: DataFrame) -> DataFrame:
+    diff = df.groupby(["type"], group_keys=False).apply(diff_start_stop)
     return diff
 
 
@@ -103,6 +117,15 @@ def decode_file():
     else:
         output = stdout
     decode(df).to_csv(path_or_buf=output)
+
+
+def jitter():
+    df = read_csv(argv[1])
+    if len(argv) > 2:
+        output = argv[2]
+    else:
+        output = stdout
+    jitter_events(decode(df)).to_csv(path_or_buf=output)
 
 
 def mean_delay():

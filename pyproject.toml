@@ -66,7 +66,8 @@ black = "^23.1.0"
 
 [tool.poetry.scripts]
 decode-file = "master_thesis_data:decode_file"
-mean-delay = "master_thesis_data:mean_delay"
+jitter = "master_thesis_data:jitter"
+delay = "master_thesis_data:mean_delay"
 
 [build-system]
 requires = ["poetry-core"]
