@@ -15,7 +15,6 @@ class TraceType(Enum):
     ForwardToApex = 8
     VirtualLinkScheduled = 9
     Echo = 10
-    Done = 11  # End of forwarding loop
 
     @classmethod
     def try_from_int(cls, val):
@@ -41,13 +40,16 @@ class EchoEvent(Enum):
 
 def decode(df: DataFrame) -> DataFrame:
     df = df.rename(columns={"Time [s]": "t"})
-    df["data"] = df[channel_labels(1, 5)].apply(decode_bytes, axis=1)
-    df["end"] = df[channel_labels(0, 1)].astype(bool)
-    df["type"] = df[channel_labels(5, 8)].apply(decode_bytes, axis=1)
-    # df["type"] = df["type"].apply(TraceType.try_from_int)
-    # df["echo"] = df[["type", "data"]].apply(decode_echo, axis=1)
+
     # Eliminate duplicates
-    df = df.loc[df["type"].shift() != df["type"]]
+    df["raw"] = df[channel_labels(0, 8)].apply(decode_bytes, axis=1)
+    df = df.loc[df["raw"].shift() != df["raw"]]
+
+    df["data"] = df[channel_labels(0, 3)].apply(decode_bytes, axis=1)
+    df["end"] = df[channel_labels(7, 8)].astype(bool)
+    df["type"] = df[channel_labels(3, 7)].apply(decode_bytes, axis=1)
+    df["type"] = df["type"].apply(TraceType.try_from_int)
+    df["echo"] = df[["type", "data"]].apply(decode_echo, axis=1)
     df = df[["t", "end", "type", "data"]]
 
     return df
