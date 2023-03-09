@@ -49,8 +49,8 @@ def decode(df: DataFrame) -> DataFrame:
     df["end"] = df[channel_labels(7, 8)].astype(bool)
     df["type"] = df[channel_labels(3, 7)].apply(decode_bytes, axis=1)
     df["type"] = df["type"].apply(TraceType.try_from_int)
-    df["echo"] = df[["type", "data"]].apply(decode_echo, axis=1)
-    df = df[["t", "end", "type", "data"]]
+    df["echo"] = df.apply(decode_echo, axis=1)
+    df = df[["t", "end", "type", "echo", "raw"]]
 
     return df
 
@@ -105,8 +105,8 @@ def channel_labels(start, stop) -> [str]:
 
 
 def decode_echo(df: Series) -> EchoEvent | None:
-    if df[0] is TraceType.Echo:
-        return EchoEvent.try_from_int(df[1])
+    if df["type"] is TraceType.Echo:
+        return EchoEvent.try_from_int(df["data"])
     else:
         return None
 
