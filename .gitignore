@@ -109,3 +109,6 @@ result
 
 # Direnv
 .direnv
+
+# Exported captures
+*digital.csv
