@@ -123,6 +123,13 @@ def decode_echo(df: Series) -> EchoEvent | None:
         return None
 
 
+def events_raw_delays(df: DataFrame) -> DataFrame:
+    df = delays_type(decode_raw(df))
+    df = df[["type", "delay"]]
+    df["type"] = df["type"].apply(TraceType.try_from_int)
+    return df.dropna()
+
+
 # Entry functions
 def decode_file():
     if len(argv) > 1:
@@ -161,3 +168,17 @@ def mean_delay():
     else:
         output = stdout
     mean_delay_events(decode_raw(df)).to_csv(path_or_buf=output)
+
+
+def raw_delays():
+    if len(argv) > 1:
+        input = argv[1]
+    else:
+        input = stdin
+    df = read_csv(input)
+    if len(argv) > 2:
+        output = argv[2]
+    else:
+        output = stdout
+    df = events_raw_delays(df)
+    df.to_csv(path_or_buf=output)
