@@ -1,4 +1,4 @@
-from sys import argv, stdout
+from sys import argv, stdout, stdin
 from pandas import DataFrame, Series, read_csv
 from enum import Enum
 
@@ -50,7 +50,7 @@ def decode(df: DataFrame) -> DataFrame:
     df["type"] = df[channel_labels(3, 7)].apply(decode_bytes, axis=1)
     df["type"] = df["type"].apply(TraceType.try_from_int)
     df["echo"] = df.apply(decode_echo, axis=1)
-    df = df[["t", "end", "type", "echo", "raw"]]
+    df = df[["t", "end", "type", "echo"]]
 
     return df
 
@@ -113,7 +113,11 @@ def decode_echo(df: Series) -> EchoEvent | None:
 
 # Entry functions
 def decode_file():
-    df = read_csv(argv[1])
+    if len(args) > 1:
+        input = argv[1]
+    else:
+        input = stdin
+    df = read_csv(input)
     if len(argv) > 2:
         output = argv[2]
     else:
