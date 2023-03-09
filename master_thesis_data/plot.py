@@ -17,10 +17,9 @@ def plot_delays():
     else:
         output = "out.png"
     df = events_raw_delays(df)
-    print(df)
-    df = df.where(df["type"] == TraceType.NetworkSend)
-    print(df)
-    sb.boxplot(x=df["delay"])
-
+    df["type"] = df["type"].apply(lambda x: str(x).split(".")[-1])
+    df = df.where(df["delay"].between(0, 0.01) & df["type"] != TraceType.Echo)
+    sb.boxplot(data=df, x="delay", y="type")
+    plt.subplots_adjust(left=0.3)
     plt.savefig(output)
 
