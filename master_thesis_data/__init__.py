@@ -37,8 +37,7 @@ class EchoEvent(Enum):
         except:
             None
 
-
-def decode(df: DataFrame) -> DataFrame:
+def decode_raw(df: DataFrame) -> DataFrame:
     df = df.rename(columns={"Time [s]": "t"})
 
     # Eliminate duplicates
@@ -46,11 +45,19 @@ def decode(df: DataFrame) -> DataFrame:
     df = df.loc[df["raw"].shift() != df["raw"]]
 
     df["data"] = df[channel_labels(0, 3)].apply(decode_bytes, axis=1)
-    df["end"] = df[channel_labels(7, 8)].astype(bool)
     df["type"] = df[channel_labels(3, 7)].apply(decode_bytes, axis=1)
+    df["end"] = df[channel_labels(7, 8)]
+
+    return df[["t", "end", "type", "data"]]
+
+
+def decode(df: DataFrame) -> DataFrame:
+    df = decode_raw(df)
+
     df["type"] = df["type"].apply(TraceType.try_from_int)
     df["echo"] = df.apply(decode_echo, axis=1)
-    df = df[["t", "end", "type", "echo"]]
+    df["end"] = df.apply(boo, axis=1)
+    df = df[["t", "end", "type", "echo", "data"]]
 
     return df
 
@@ -90,9 +97,9 @@ def delays_type(df: DataFrame) -> DataFrame:
 
 
 def diff_start_stop(r: DataFrame) -> DataFrame:
-    end = r.where(r["end"] == True)
-    begin = r.where(r["end"] == False)
-    r["delay"] = end["t"].reindex_like(begin) - begin["t"]
+    end = r.where(r["end"] == 1).dropna()
+    begin = r.where(r["end"] == 0).dropna().reindex_like(other=end, method="pad")
+    r["delay"] = end["t"] - begin["t"]
     return r
 
 
@@ -113,7 +120,7 @@ def decode_echo(df: Series) -> EchoEvent | None:
 
 # Entry functions
 def decode_file():
-    if len(args) > 1:
+    if len(argv) > 1:
         input = argv[1]
     else:
         input = stdin
@@ -126,18 +133,26 @@ def decode_file():
 
 
 def jitter():
-    df = read_csv(argv[1])
+    if len(argv) > 1:
+        input = argv[1]
+    else:
+        input = stdin
+    df = read_csv(input)
     if len(argv) > 2:
         output = argv[2]
     else:
         output = stdout
-    jitter_events(decode(df)).to_csv(path_or_buf=output)
+    jitter_events(decode_raw(df)).to_csv(path_or_buf=output)
 
 
 def mean_delay():
-    df = read_csv(argv[1])
+    if len(argv) > 1:
+        input = argv[1]
+    else:
+        input = stdin
+    df = read_csv(input)
     if len(argv) > 2:
         output = argv[2]
     else:
         output = stdout
-    mean_delay_events(decode(df)).to_csv(path_or_buf=output)
+    mean_delay_events(decode_raw(df)).to_csv(path_or_buf=output)
