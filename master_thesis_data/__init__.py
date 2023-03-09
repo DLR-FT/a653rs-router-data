@@ -37,6 +37,7 @@ class EchoEvent(Enum):
         except:
             None
 
+
 def decode_raw(df: DataFrame) -> DataFrame:
     df = df.rename(columns={"Time [s]": "t"})
 
@@ -56,7 +57,7 @@ def decode(df: DataFrame) -> DataFrame:
 
     df["type"] = df["type"].apply(TraceType.try_from_int)
     df["echo"] = df.apply(decode_echo, axis=1)
-    df["end"] = df.apply(boo, axis=1)
+    df["end"] = df["end"].apply(bool)
     df = df[["t", "end", "type", "echo", "data"]]
 
     return df
@@ -79,6 +80,8 @@ def mean_delay_events(df: DataFrame) -> DataFrame:
     diff = delays_type(df)
     diff = diff.groupby(["type"], group_keys=False).mean()
     diff = diff[["delay"]]
+    diff = diff.reset_index()
+    diff["type"] = diff["type"].apply(TraceType.try_from_int)
     return diff
 
 
@@ -87,6 +90,8 @@ def jitter_events(df: DataFrame) -> DataFrame:
     diff = delays_type(df)
     diff = diff.groupby(["type"], group_keys=False).var()
     diff = diff[["delay"]]
+    diff = diff.reset_index()
+    diff["type"] = diff["type"].apply(TraceType.try_from_int)
     return diff
 
 
