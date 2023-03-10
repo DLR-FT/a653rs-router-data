@@ -1,7 +1,10 @@
 from sys import argv, stdout, stdin
 from pandas import DataFrame, Series, read_csv
 from enum import Enum
-from typing import TextIO
+from typing import TextIO, TypeVar, Type
+
+
+Tt = TypeVar('Tt', bound='TraceType')
 
 
 class TraceType(Enum):
@@ -18,11 +21,13 @@ class TraceType(Enum):
     Echo = 10
 
     @classmethod
-    def try_from_int(cls, val: int) -> TraceType|None:
+    def try_from_int(cls: Type[Tt], val: int) -> Tt|None:
         try:
             return cls(val)
         except:
             return None
+
+Ee = TypeVar('Ee', bound='EchoEvent')
 
 
 class EchoEvent(Enum):
@@ -32,7 +37,7 @@ class EchoEvent(Enum):
     EchoReplyReceived = 3  # Occurs when receive is complete
 
     @classmethod
-    def try_from_int(cls, val: int) -> EchoEvent|None:
+    def try_from_int(cls: Type[Ee], val: int) -> Ee|None:
         try:
             return cls(val)
         except:
