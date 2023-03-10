@@ -33,8 +33,9 @@
             nativeBuildInputs = [ pkgs.nixpkgs-fmt myAppEnv ];
           } ''
           nixpkgs-fmt --check ${./.}
-          black --check ${./.}
-          mypy ${./.}
+          black --config ${./pyproject.toml} --check ${./.}
+          mypy --config ${./pyproject.toml} ${./.}
+          touch $out
         '';
       in
       {
