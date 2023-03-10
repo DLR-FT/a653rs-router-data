@@ -5,7 +5,6 @@
   inputs.flake-utils.url = "github:numtide/flake-utils";
   inputs.poetry2nix = {
     url = "github:nix-community/poetry2nix";
-    inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = { self, nixpkgs, flake-utils, poetry2nix, ... }@inputs:
@@ -37,7 +36,7 @@
         };
         formatter = pkgs.nixpkgs-fmt;
         devShells.default = myAppEnv.env.overrideAttrs (oldAttrs: {
-          buildInputs = [ pkgs.poetry pkgs.python3 pkgs.mypy ];
+          buildInputs = oldAttrs.buildInputs ++ [ pkgs.poetry pkgs.python3 ];
         });
       });
 }
