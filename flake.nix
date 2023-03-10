@@ -28,6 +28,14 @@
                 );
             });
         };
+        preCommitHook = pkgs.runCommand "pre-commit-hook"
+          {
+            nativeBuildInputs = [ pkgs.nixpkgs-fmt myAppEnv ];
+          } ''
+          nixpkgs-fmt --check ${./.}
+          black --check ${./.}
+          mypy ${./.}
+        '';
       in
       {
         packages = {
@@ -36,7 +44,8 @@
         };
         formatter = pkgs.nixpkgs-fmt;
         devShells.default = myAppEnv.env.overrideAttrs (oldAttrs: {
-          buildInputs = (oldAttrs.buildInputs or [ ] )++ [ pkgs.poetry pkgs.python3 ];
+          buildInputs = (oldAttrs.buildInputs or [ ]) ++ [ pkgs.poetry pkgs.python3 ];
         });
+        checks.default = preCommitHook;
       });
 }
