@@ -2,13 +2,14 @@ import seaborn as sb
 import matplotlib.pyplot as plt
 import matplotlib
 from sys import argv, stdin, stdout
+from typing import TextIO
 
 from master_thesis_data import *
 
 
-def plot_delays():
+def plot_delays() -> None:
     if len(argv) > 1:
-        input = argv[1]
+        input: TextIO | str = argv[1]
     else:
         input = stdin
     df = read_csv(input)
@@ -26,7 +27,7 @@ def plot_delays():
     plt.savefig(output)
 
 
-def trace_type_name(val: int) -> str:
+def trace_type_name(val: int) -> str | None:
     t = TraceType.try_from_int(val)
     if t:
         return t.name

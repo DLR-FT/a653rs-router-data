@@ -1,6 +1,7 @@
 from sys import argv, stdout, stdin
 from pandas import DataFrame, Series, read_csv
 from enum import Enum
+from typing import TextIO
 
 
 class TraceType(Enum):
@@ -17,11 +18,11 @@ class TraceType(Enum):
     Echo = 10
 
     @classmethod
-    def try_from_int(cls, val):
+    def try_from_int(cls, val: int) -> TraceType|None:
         try:
             return cls(val)
         except:
-            None
+            return None
 
 
 class EchoEvent(Enum):
@@ -31,11 +32,11 @@ class EchoEvent(Enum):
     EchoReplyReceived = 3  # Occurs when receive is complete
 
     @classmethod
-    def try_from_int(cls, val):
+    def try_from_int(cls, val: int) -> EchoEvent|None:
         try:
             return cls(val)
         except:
-            None
+            return None
 
 
 def decode_raw(df: DataFrame) -> DataFrame:
@@ -112,7 +113,7 @@ def decode_bytes(c: Series) -> int:
     return sum(x << i for i, x in enumerate(c))
 
 
-def channel_labels(start, stop) -> [str]:
+def channel_labels(start: int, stop: int) -> list[str]:
     return ["Channel %d" % c for c in range(start, stop)]
 
 
@@ -130,53 +131,53 @@ def events_raw_delays(df: DataFrame) -> DataFrame:
 
 
 # Entry functions
-def decode_file():
+def decode_file() -> None:
     if len(argv) > 1:
-        input = argv[1]
+        input: TextIO|str = argv[1]
     else:
         input = stdin
     df = read_csv(input)
     if len(argv) > 2:
-        output = argv[2]
+        output: TextIO|str = argv[2]
     else:
         output = stdout
     decode(df).to_csv(path_or_buf=output)
 
 
-def jitter():
+def jitter() -> None:
     if len(argv) > 1:
-        input = argv[1]
+        input: TextIO|str = argv[1]
     else:
         input = stdin
     df = read_csv(input)
     if len(argv) > 2:
-        output = argv[2]
+        output: TextIO|str = argv[2]
     else:
         output = stdout
     jitter_events(decode_raw(df)).to_csv(path_or_buf=output)
 
 
-def mean_delay():
+def mean_delay() -> None:
     if len(argv) > 1:
-        input = argv[1]
+        input: TextIO|str = argv[1]
     else:
         input = stdin
     df = read_csv(input)
     if len(argv) > 2:
-        output = argv[2]
+        output: TextIO|str = argv[2]
     else:
         output = stdout
     mean_delay_events(decode_raw(df)).to_csv(path_or_buf=output)
 
 
-def raw_delays():
+def raw_delays() -> None:
     if len(argv) > 1:
-        input = argv[1]
+        input: TextIO|str = argv[1]
     else:
         input = stdin
     df = read_csv(input)
     if len(argv) > 2:
-        output = argv[2]
+        output: TextIO|str = argv[2]
     else:
         output = stdout
     df = events_raw_delays(df)

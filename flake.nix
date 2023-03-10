@@ -36,7 +36,7 @@
         };
         formatter = pkgs.nixpkgs-fmt;
         devShells.default = myAppEnv.env.overrideAttrs (oldAttrs: {
-          buildInputs = oldAttrs.buildInputs ++ [ pkgs.poetry pkgs.python3 ];
+          buildInputs = (oldAttrs.buildInputs or [ ] )++ [ pkgs.poetry pkgs.python3 ];
         });
       });
 }
