@@ -112,3 +112,6 @@ result
 
 # Exported captures
 *digital.csv
+
+# Matplotlib temporary output
+out.png
