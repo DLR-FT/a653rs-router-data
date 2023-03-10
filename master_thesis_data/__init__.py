@@ -126,7 +126,6 @@ def decode_echo(df: Series) -> EchoEvent | None:
 def events_raw_delays(df: DataFrame) -> DataFrame:
     df = delays_type(decode_raw(df))
     df = df[["type", "delay"]]
-    df["type"] = df["type"].apply(TraceType.try_from_int)
     return df.dropna()
 
 
@@ -181,4 +180,5 @@ def raw_delays():
     else:
         output = stdout
     df = events_raw_delays(df)
+    df["type"] = df["type"].apply(TraceType.try_from_int)
     df.to_csv(path_or_buf=output)
