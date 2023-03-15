@@ -19,9 +19,9 @@ def plot_delays() -> None:
         output = "out.png"
     df = events_raw_delays(df)
     df = df.dropna()
-    print(df)
-    df = df.where(df["delay"].between(0, 0.01) & (df["type"] != TraceType.Echo.value))
+    df = df.where(df["delay"].between(0, 0.005) & (df["type"] != TraceType.Echo.value))
     df["type"] = df["type"].apply(trace_type_name)
+    print(len(df))
     sb.boxplot(data=df, x="delay", y="type")
     plt.subplots_adjust(left=0.3)
     plt.savefig(output)
