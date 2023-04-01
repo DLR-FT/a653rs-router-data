@@ -3,6 +3,8 @@ from pandas import DataFrame, Series, read_csv
 from enum import Enum
 from typing import TextIO, TypeVar, Type
 
+import matplotlib.pyplot as plt
+import seaborn as sb
 
 Tt = TypeVar("Tt", bound="TraceType")
 
@@ -136,6 +138,12 @@ def events_raw_delays(df: DataFrame) -> DataFrame:
     return df.dropna()
 
 
+def parse_throughput_log(path: str | TextIO) -> Series:
+    data = read_csv(path, sep=" ", header=None)
+    throughput = data[3]
+    return throughput
+
+
 # Entry functions
 def decode_file() -> None:
     if len(argv) > 1:
@@ -189,3 +197,19 @@ def raw_delays() -> None:
     df = events_raw_delays(df)
     df["type"] = df["type"].apply(TraceType.try_from_int)
     df.to_csv(path_or_buf=output)
+
+
+def throughput() -> None:
+    if len(argv) > 1:
+        input: TextIO | str = argv[1]
+    else:
+        input = stdin
+    if len(argv) > 2:
+        output = argv[2]
+    else:
+        output = "out.png"
+    tp = parse_throughput_log(input)
+    tp = tp - tp.shift()
+    sb.histplot(tp, kde=False)
+    plt.xlabel("Throughput [Byte/s]")
+    plt.savefig(output)
