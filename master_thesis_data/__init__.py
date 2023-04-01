@@ -213,3 +213,17 @@ def throughput() -> None:
     sb.histplot(tp, kde=False)
     plt.xlabel("Throughput [Byte/s]")
     plt.savefig(output)
+
+
+def parse_rtt(path: str | TextIO) -> Series:
+    data = read_csv(path, sep=" ", header=None)
+    return data[8]  # TODO correct index for XNG output?
+
+
+def rtt() -> None:
+    data = DataFrame(columns=["Direct", "Local", "Remote"])
+    data["Direct"] = parse_rtt(argv[1])
+    data["Local"] = parse_rtt(argv[2])
+    data["Remote"] = parse_rtt(argv[3])
+    sb.ecdfplot(data=data, axis="columns")
+    plt.savefig("out.png")

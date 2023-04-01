@@ -73,6 +73,7 @@ mean-delays = "master_thesis_data:mean_delay"
 raw-delays = "master_thesis_data:raw_delays"
 plot-delays = "master_thesis_data.plot:plot_delays"
 throughput = "master_thesis_data.plot:throughput"
+rtt = "master_thesis_data.plot:rtt"
 
 [build-system]
 requires = ["poetry-core"]
