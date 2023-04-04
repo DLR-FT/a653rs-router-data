@@ -46,3 +46,10 @@ For client and server and each consecutive event:
 For echo-server and echo-client apps:
 - RTT delay
 - transmission delay APEX write <-> APEX read
+
+## Throughput
+
+- max = 256 * 8KiByte * (MF / source_t)
+- direct = 13 MByte/s
+- local = 7.3 MByte/s -> direct * (MF / io_t)
+- remote = 
