@@ -5,6 +5,8 @@ from typing import TextIO, TypeVar, Type
 
 import matplotlib.pyplot as plt
 import seaborn as sb
+import pandas as pd
+import numpy as np
 
 Tt = TypeVar("Tt", bound="TraceType")
 
@@ -216,14 +218,24 @@ def throughput() -> None:
 
 
 def parse_rtt(path: str | TextIO) -> Series:
-    data = read_csv(path, sep=" ", header=None)
+    data = read_csv(path, sep=" ", header=None, usecols=[8], dtype=np.float64)
     return data[8]  # TODO correct index for XNG output?
 
 
+def parse_rtt_scenario(path: str | TextIO, name: str) -> DataFrame:
+    df = DataFrame(columns=["Scenario", "RTT"])
+    rtt = parse_rtt(path)
+    df["RTT"] = rtt.where(rtt < 250000.0, np.nan).dropna()
+    df["Scenario"] = name
+    return df
+
+
 def rtt() -> None:
-    data = DataFrame(columns=["Direct", "Local", "Remote"])
-    data["Direct"] = parse_rtt(argv[1])
-    data["Local"] = parse_rtt(argv[2])
-    data["Remote"] = parse_rtt(argv[3])
-    sb.ecdfplot(data=data, axis="columns")
+    data = DataFrame(columns=["Scenario", "RTT"])
+    direct = parse_rtt_scenario(argv[1], "Direct")
+    local = parse_rtt_scenario(argv[2], "Local")
+    remote = parse_rtt_scenario(argv[3], "Remote")
+    data = pd.concat([direct, local, remote])
+    print(data)
+    sb.catplot(data=data, x="Scenario", y="RTT", kind="strip")
     plt.savefig("out.png")

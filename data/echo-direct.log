@@ -1,6 +1,5 @@
 echo_client_zynq7000: [32mINFO[39m Echo client main
 apex_echo::queuing: [32mINFO[39m Running echo client periodic process
-apex_echo::queuing: [32mINFO[39m EchoReply: seqnr = 1, time = 154560 us
 apex_echo::queuing: [32mINFO[39m EchoReply: seqnr = 2, time = 1477 us
 apex_echo::queuing: [32mINFO[39m EchoReply: seqnr = 3, time = 1048 us
 apex_echo::queuing: [32mINFO[39m EchoReply: seqnr = 4, time = 1479 us
