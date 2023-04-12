@@ -1,17 +1,3 @@
-apex_throughput: [32mINFO[39m Received: 8650375168
-apex_throughput: [32mINFO[39m Received: 8662237184
-apex_throughput: [32mINFO[39m Received: 8674099200
-apex_throughput: [32mINFO[39m Received: 8687443968
-apex_throughput: [32mINFO[39m Received: 8699305984
-apex_throughput: [32mINFO[39m Received: 8711168000
-apex_throughput: [32mINFO[39m Received: 8724512768
-apex_throughput: [32mINFO[39m Received: 8736374784
-apex_throughput: [32mINFO[39m Received: 8748236800
-apex_throughput: [32mINFO[39m Received: 8761581568
-apex_throughput: [32mINFO[39m Starting throughput sender
-np_zynq7000: [32mINFO[39m Running network partition aperiodic process
-apex_throughput: [32mINFO[39m Starting throughput receiver
-apex_throughput: [32mINFO[39m Received: 0
 apex_throughput: [32mINFO[39m Received: 7413760
 apex_throughput: [32mINFO[39m Received: 14802944
 apex_throughput: [32mINFO[39m Received: 22183936
@@ -370,7 +356,6 @@ apex_throughput: [32mINFO[39m Received: 2622218240
 apex_throughput: [32mINFO[39m Received: 2629607424
 apex_throughput: [32mINFO[39m Received: 2636988416
 apex_throughput: [32mINFO[39m Received: 2644377600
-network_partition::forward: [31mERROR[39m System time was not normal
 apex_throughput: [32mINFO[39m Received: 2651766784
 apex_throughput: [32mINFO[39m Received: 2659147776
 apex_throughput: [32mINFO[39m Received: 2666536960

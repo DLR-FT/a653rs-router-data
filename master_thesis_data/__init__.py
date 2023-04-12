@@ -141,10 +141,9 @@ def events_raw_delays(df: DataFrame) -> DataFrame:
 
 
 def parse_throughput_log(path: str | TextIO) -> Series:
-    data = read_csv(path, sep=" ", header=None)
+    data = read_csv(path, sep=" ", header=None, usecols=[3], dtype=np.int64)
     throughput = data[3]
     return throughput
-
 
 # Entry functions
 def decode_file() -> None:
@@ -202,24 +201,37 @@ def raw_delays() -> None:
 
 
 def throughput() -> None:
-    if len(argv) > 1:
-        input: TextIO | str = argv[1]
-    else:
-        input = stdin
-    if len(argv) > 2:
-        output = argv[2]
-    else:
-        output = "out.png"
-    tp = parse_throughput_log(input)
-    tp = tp - tp.shift()
-    sb.histplot(tp, kde=False)
-    plt.xlabel("Throughput [Byte/s]")
+    direct = argv[1]
+    output = "out.png"
+    direct = parse_throughput_scenario(direct, "Direct")
+    print(direct)
+
+    local = argv[2]
+    local = parse_throughput_scenario(local, "Local")
+    df = pd.concat([direct, local])
+
+    #local = parse_rtt_scenario(input, "Local")
+    sb.relplot(data=df, x="Time", y="Throughput", hue="Scenario")
+    plt.ylabel("Throughput [Byte/s]")
+    plt.xlabel("Time [s]")
     plt.savefig(output)
 
 
 def parse_rtt(path: str | TextIO) -> Series:
+    df = DataFrame(columns=["Scenario", "RTT"])
     data = read_csv(path, sep=" ", header=None, usecols=[8], dtype=np.float64)
-    return data[8]  # TODO correct index for XNG output?
+    return data[8]
+
+
+def parse_throughput_scenario(path: str | TextIO, scenario: str) -> DataFrame:
+    df = DataFrame(columns=["Scenario", "Throughput"])
+    tp = parse_throughput_log(path)
+    tp = tp - tp.shift()
+    tp = tp.shift(-1).dropna()
+    df["Throughput"] = tp
+    df["Time"] = Series(range(1, len(tp) + 1))
+    df["Scenario"] = scenario
+    return df
 
 
 def parse_rtt_scenario(path: str | TextIO, name: str) -> DataFrame:
@@ -236,6 +248,5 @@ def rtt() -> None:
     local = parse_rtt_scenario(argv[2], "Local")
     remote = parse_rtt_scenario(argv[3], "Remote")
     data = pd.concat([direct, local, remote])
-    print(data)
     sb.catplot(data=data, x="Scenario", y="RTT", kind="strip")
     plt.savefig("out.png")
