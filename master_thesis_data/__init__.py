@@ -210,10 +210,8 @@ def throughput() -> None:
     local = parse_throughput_scenario(local, "Local")
     df = pd.concat([direct, local])
 
-    #local = parse_rtt_scenario(input, "Local")
-    sb.relplot(data=df, x="Time", y="Throughput", hue="Scenario")
+    sb.catplot(data=df, y="Throughput", x="Scenario", kind="bar")
     plt.ylabel("Throughput [Byte/s]")
-    plt.xlabel("Time [s]")
     plt.savefig(output)
 
 
@@ -237,7 +235,9 @@ def parse_throughput_scenario(path: str | TextIO, scenario: str) -> DataFrame:
 def parse_rtt_scenario(path: str | TextIO, name: str) -> DataFrame:
     df = DataFrame(columns=["Scenario", "RTT"])
     rtt = parse_rtt(path)
-    df["RTT"] = rtt.where(rtt < 250000.0, np.nan).dropna()
+
+#.where(rtt < 250000.0, np.nan)
+    df["RTT"] = rtt.dropna()
     df["Scenario"] = name
     return df
 
