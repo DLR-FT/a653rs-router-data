@@ -11,6 +11,14 @@ import numpy as np
 Tt = TypeVar("Tt", bound="TraceType")
 
 
+def trace_type_name(val: int) -> str | None:
+    t = TraceType.try_from_int(val)
+    if t:
+        return t.name
+    else:
+        return None
+
+
 class TraceType(Enum):
     Noop = 0
     NetworkSend = 1  # Occurs when send is started
@@ -250,3 +258,49 @@ def rtt() -> None:
     data = pd.concat([direct, local, remote])
     sb.catplot(data=data, x="Scenario", y="RTT", kind="strip")
     plt.savefig("out.png")
+
+
+def plot_delays_apex_ports() -> None:
+    if len(argv) > 1:
+        input: TextIO | str = argv[1]
+    else:
+        input = stdin
+    df = read_csv(input)
+    if len(argv) > 2:
+        output = argv[2]
+    else:
+        output = "out.png"
+    df = events_raw_delays(df)
+    df = df.where(
+        (df["type"] == TraceType.ApexReceive.value)
+        | (df["type"] == TraceType.ApexSend.value)
+    )
+    df = df.dropna()
+    df["type"] = df["type"].apply(trace_type_name)
+    print(df)
+    sb.boxplot(data=df, x="delay", y="type")
+    plt.subplots_adjust(left=0.3)
+    plt.savefig(output)
+
+
+def plot_delays_network() -> None:
+    if len(argv) > 1:
+        input: TextIO | str = argv[1]
+    else:
+        input = stdin
+    df = read_csv(input)
+    if len(argv) > 2:
+        output = argv[2]
+    else:
+        output = "out.png"
+    df = events_raw_delays(df)
+    df = df.dropna()
+    df = df.where(
+        (df["type"] == TraceType.NetworkSend.value)
+        | (df["type"] == TraceType.NetworkReceive.value)
+    )
+    df["type"] = df["type"].apply(trace_type_name)
+    print(df)
+    sb.boxplot(data=df, x="delay", y="type")
+    plt.subplots_adjust(left=0.3)
+    plt.savefig(output)

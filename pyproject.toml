@@ -74,6 +74,8 @@ raw-delays = "master_thesis_data:raw_delays"
 plot-delays = "master_thesis_data.plot:plot_delays"
 throughput = "master_thesis_data.plot:throughput"
 rtt = "master_thesis_data.plot:rtt"
+delays-apex-ports = "master_thesis_data:plot_delays_apex_ports"
+delays-network = "master_thesis_data:plot_delays_network"
 
 [build-system]
 requires = ["poetry-core"]

@@ -25,11 +25,3 @@ def plot_delays() -> None:
     sb.boxplot(data=df, x="delay", y="type")
     plt.subplots_adjust(left=0.3)
     plt.savefig(output)
-
-
-def trace_type_name(val: int) -> str | None:
-    t = TraceType.try_from_int(val)
-    if t:
-        return t.name
-    else:
-        return None
