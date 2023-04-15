@@ -114,3 +114,4 @@ result
 
 # Matplotlib temporary output
 out.png
+*.png
