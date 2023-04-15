@@ -256,7 +256,8 @@ def rtt() -> None:
     local = parse_rtt_scenario(argv[2], "Local")
     remote = parse_rtt_scenario(argv[3], "Remote")
     data = pd.concat([direct, local, remote])
-    sb.catplot(data=data, x="Scenario", y="RTT", kind="strip")
+    g = sb.catplot(data=data, x="Scenario", y="RTT", kind="violin", inner=None)
+    sb.stripplot(data=data, x="Scenario", y="RTT", color="k", size=1, ax=g.ax)
     plt.ylabel("RTT [us]")
     plt.savefig("out.png")
 
