@@ -153,6 +153,7 @@ def parse_throughput_log(path: str | TextIO) -> Series:
     throughput = data[3]
     return throughput
 
+
 # Entry functions
 def decode_file() -> None:
     if len(argv) > 1:
@@ -243,10 +244,9 @@ def parse_throughput_scenario(path: str | TextIO, scenario: str) -> DataFrame:
 def parse_rtt_scenario(path: str | TextIO, name: str) -> DataFrame:
     df = DataFrame(columns=["Scenario", "RTT"])
     rtt = parse_rtt(path)
-
-#.where(rtt < 250000.0, np.nan)
-    df["RTT"] = rtt.dropna()
+    df["RTT"] = rtt.where(rtt < 20000).dropna()
     df["Scenario"] = name
+    print(df)
     return df
 
 
@@ -257,6 +257,7 @@ def rtt() -> None:
     remote = parse_rtt_scenario(argv[3], "Remote")
     data = pd.concat([direct, local, remote])
     sb.catplot(data=data, x="Scenario", y="RTT", kind="strip")
+    plt.ylabel("RTT [us]")
     plt.savefig("out.png")
 
 
