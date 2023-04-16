@@ -76,6 +76,7 @@ throughput = "master_thesis_data.plot:throughput"
 rtt = "master_thesis_data.plot:rtt"
 delays-apex-ports = "master_thesis_data:plot_delays_apex_ports"
 delays-network = "master_thesis_data:plot_delays_network"
+ipdv = "master_thesis_data:ipdv"
 
 [build-system]
 requires = ["poetry-core"]

@@ -306,3 +306,43 @@ def plot_delays_network() -> None:
     sb.boxplot(data=df, x="delay", y="type")
     plt.subplots_adjust(left=0.3)
     plt.savefig(output)
+
+
+def rtt_var() -> None:
+    input = argv[1]
+    output = argv[2]
+    direct = parse_rtt(argv[1]).var()
+    local = parse_rtt(argv[2]).var()
+    remote = parse_rtt(argv[3])
+    remote = remote.where(remote < 20000).dropna().var()
+    data = DataFrame(
+        {"Scenario": ["Direct", "Local", "Remote"], "RTT": [direct, local, remote]}
+    )
+    g = sb.catplot(data=data, x="Scenario", y="RTT", kind="bar")
+    plt.ylabel("Var(RTT)")
+    plt.savefig("out.png")
+
+
+def diff(s: Series) -> np.int64:
+    return s - s.shift(-1)
+
+
+def diff_scenario(s: Series, sc: str) -> DataFrame:
+    df = DataFrame(columns=["Scenario", "IPDV"])
+    df["IPDV"] = s
+    df["Scenario"] = sc
+    return df
+
+
+def ipdv() -> None:
+    input = argv[1]
+    output = argv[2]
+    direct = diff_scenario(diff(parse_rtt(argv[1])), "Direct")
+    local = diff_scenario(diff(parse_rtt(argv[2])), "Local")
+    remote = parse_rtt(argv[3])
+    remote = diff_scenario(diff(remote.where(remote < 20000).dropna()), "Remote")
+    data = pd.concat([direct, local, remote])
+    print(data)
+    g = sb.catplot(data=data, x="Scenario", y="IPDV", kind="box")
+    plt.ylabel("IPDV [us]")
+    plt.savefig("out.png")
