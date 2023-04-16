@@ -343,6 +343,6 @@ def ipdv() -> None:
     remote = diff_scenario(diff(remote.where(remote < 20000).dropna()), "Remote")
     data = pd.concat([direct, local, remote])
     print(data)
-    g = sb.catplot(data=data, x="Scenario", y="IPDV", kind="box")
-    plt.ylabel("IPDV [us]")
+    g = sb.catplot(data=data, y="Scenario", x="IPDV", kind="box")
+    plt.xlabel("IPDV [us]")
     plt.savefig("out.png")
