@@ -331,18 +331,27 @@ def diff_scenario(s: Series, sc: str) -> DataFrame:
     df = DataFrame(columns=["Scenario", "IPDV"])
     df["IPDV"] = s
     df["Scenario"] = sc
+    print(df)
     return df
 
 
 def ipdv() -> None:
     input = argv[1]
-    output = argv[2]
     direct = diff_scenario(diff(parse_rtt(argv[1])), "Direct")
     local = diff_scenario(diff(parse_rtt(argv[2])), "Local")
     remote = parse_rtt(argv[3])
     remote = diff_scenario(diff(remote.where(remote < 20000).dropna()), "Remote")
     data = pd.concat([direct, local, remote])
     print(data)
-    g = sb.catplot(data=data, y="Scenario", x="IPDV", kind="box")
+    sb.catplot(data=data, y="Scenario", x="IPDV", kind="box")
     plt.xlabel("IPDV [us]")
     plt.savefig("out.png")
+
+
+def rtt_timeline() -> None:
+    remote = parse_rtt(argv[1])
+    rtt = remote.where(remote < 20000).dropna() / 1000.0
+    df = DataFrame({"t [s]": rtt.index, "RTT [s]": rtt})
+    print(df)
+    sb.relplot(data=df, x="t [s]", y="RTT [s]", kind="line", aspect=4)
+    plt.savefig("out")
