@@ -351,7 +351,7 @@ def ipdv() -> None:
 def rtt_timeline() -> None:
     remote = parse_rtt(argv[1])
     rtt = remote.where(remote < 20000).dropna() / 1000.0
-    df = DataFrame({"t [s]": rtt.index, "RTT [s]": rtt})
+    df = DataFrame({"t [s]": rtt.index, "RTT [ms]": rtt})
     print(df)
-    sb.relplot(data=df, x="t [s]", y="RTT [s]", kind="line", aspect=4)
+    sb.relplot(data=df, x="t [s]", y="RTT [ms]", kind="line", aspect=4)
     plt.savefig("out")
