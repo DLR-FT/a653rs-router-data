@@ -2,6 +2,7 @@ from sys import argv, stdout, stdin
 from pandas import DataFrame, Series, read_csv
 from enum import Enum
 from typing import TextIO, TypeVar, Type
+from .simulator import Simulation, Schedule, Partition, PartitionWindow, simulate
 
 import matplotlib.pyplot as plt
 import seaborn as sb
@@ -355,3 +356,36 @@ def rtt_timeline() -> None:
     print(df)
     sb.relplot(data=df, x="t [s]", y="RTT [ms]", kind="line", aspect=4)
     plt.savefig("out")
+
+
+def simulate_rtt() -> None:
+    s = Simulation(
+        client=Schedule(
+            major_frame=2000,
+            inter_mf_delay=11,
+            partition_windows=[
+                PartitionWindow(partition=Partition.client, offset=0, duration=500),
+                PartitionWindow(partition=Partition.io, offset=500, duration=1500),
+            ],
+        ),
+        server=Schedule(
+            major_frame=2000,
+            inter_mf_delay=13,
+            partition_windows=[
+                PartitionWindow(partition=Partition.server, offset=0, duration=500),
+                PartitionWindow(partition=Partition.io, offset=500, duration=1500),
+            ],
+        ),
+        transmission_delay=1000,
+        apex_delay=250,
+        client_start=0,
+        server_start=13,
+        step=5,
+        duration=600_000_000,
+        echo_period=1_000_000,
+    )
+    df = DataFrame(
+        data=zip(range(1, 600), simulate(s)), columns=["Time [s]", "RTT [us]"]
+    )
+    sb.relplot(data=df, x="Time [s]", y="RTT [us]", kind="line", aspect=4)
+    plt.savefig("out2")
