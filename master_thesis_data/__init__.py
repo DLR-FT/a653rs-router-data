@@ -363,7 +363,7 @@ def simulate_rtt() -> None:
     s = Simulation(
         client=Schedule(
             major_frame=2000,
-            inter_mf_delay=1111,
+            inter_mf_delay=19,
             partition_windows=[
                 PartitionWindow(partition=Partition.client, offset=0, duration=500),
                 PartitionWindow(partition=Partition.io, offset=500, duration=1500),
@@ -371,7 +371,7 @@ def simulate_rtt() -> None:
         ),
         server=Schedule(
             major_frame=2000,
-            inter_mf_delay=0,
+            inter_mf_delay=11,
             partition_windows=[
                 PartitionWindow(partition=Partition.server, offset=0, duration=500),
                 PartitionWindow(partition=Partition.io, offset=500, duration=1500),
@@ -379,7 +379,7 @@ def simulate_rtt() -> None:
         ),
         transmission_delay=1000,
         apex_delay=250,
-        client_start=0,
+        client_start=1111,
         server_start=0,
         step=1,
         duration=(duration * 1000**2),
