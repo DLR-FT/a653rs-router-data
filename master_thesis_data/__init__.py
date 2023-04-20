@@ -381,7 +381,7 @@ def simulate_rtt() -> None:
         client_start=0,
         server_start=0,
         step=1,
-        duration=600_000_000,
+        duration=1_200_000_000,
         echo_period=1_000_000,
     )
     df = DataFrame(
