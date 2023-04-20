@@ -359,6 +359,7 @@ def rtt_timeline() -> None:
 
 
 def simulate_rtt() -> None:
+    duration = int(argv[1])
     s = Simulation(
         client=Schedule(
             major_frame=2000,
@@ -381,11 +382,11 @@ def simulate_rtt() -> None:
         client_start=0,
         server_start=0,
         step=1,
-        duration=1_200_000_000,
+        duration=(duration * 1000**2),
         echo_period=1_000_000,
     )
     df = DataFrame(
-        data=zip(range(1, 600), simulate(s)), columns=["Time [s]", "RTT [us]"]
+        data=zip(range(1, duration + 1), simulate(s)), columns=["Time [s]", "RTT [us]"]
     )
     sb.relplot(data=df, x="Time [s]", y="RTT [us]", kind="line", aspect=4)
     plt.savefig("out2")
