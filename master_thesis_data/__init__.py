@@ -358,12 +358,17 @@ def rtt_timeline() -> None:
     plt.savefig("out")
 
 
-def simulate_rtt() -> None:
-    duration = int(argv[1])
-    s = Simulation(
+def create_simulation(
+    duration: int,
+    client_inter_mf_delay: int = 0,
+    client_start: int = 0,
+    server_inter_mf_delay: int = 0,
+    server_start: int = 0,
+) -> Simulation:
+    return Simulation(
         client=Schedule(
             major_frame=2000,
-            inter_mf_delay=19,
+            inter_mf_delay=client_inter_mf_delay,
             partition_windows=[
                 PartitionWindow(partition=Partition.client, offset=0, duration=500),
                 PartitionWindow(partition=Partition.io, offset=500, duration=1500),
@@ -371,7 +376,7 @@ def simulate_rtt() -> None:
         ),
         server=Schedule(
             major_frame=2000,
-            inter_mf_delay=11,
+            inter_mf_delay=server_inter_mf_delay,
             partition_windows=[
                 PartitionWindow(partition=Partition.server, offset=0, duration=500),
                 PartitionWindow(partition=Partition.io, offset=500, duration=1500),
@@ -379,14 +384,56 @@ def simulate_rtt() -> None:
         ),
         transmission_delay=1000,
         apex_delay=250,
-        client_start=1111,
-        server_start=0,
+        client_start=client_start,
+        server_start=server_start,
         step=1,
         duration=(duration * 1000**2),
         echo_period=1_000_000,
     )
-    df = DataFrame(
-        data=zip(range(1, duration + 1), simulate(s)), columns=["Time [s]", "RTT [us]"]
+
+
+def simulate_rtt() -> None:
+    if len(argv) > 1:
+        duration = int(argv[1])
+    else:
+        duration = 300
+    normal = create_simulation(
+        duration=duration,
+        client_inter_mf_delay=0,
+        client_start=0,
+        server_inter_mf_delay=0,
+        server_start=0,
     )
-    sb.relplot(data=df, x="Time [s]", y="RTT [us]", kind="line", aspect=4)
+
+    large_rtt = create_simulation(
+        duration=duration,
+        client_inter_mf_delay=1111,
+        server_inter_mf_delay=0,
+        client_start=0,
+        server_start=0,
+    )
+    level_jump = create_simulation(
+        duration=duration,
+        client_inter_mf_delay=19,
+        server_inter_mf_delay=11,
+        client_start=1111,
+        server_start=0,
+    )
+    results = []
+    for label, sim in [
+        ("Normal", normal),
+        ("Different Inter-MF", large_rtt),
+        ("Different start", level_jump),
+    ]:
+        dfsim = DataFrame(
+            data=zip(range(1, duration + 1), simulate(sim)),
+            columns=["Time [s]", "RTT [us]"],
+        )
+        dfsim["Label"] = label
+        results.append(dfsim)
+    df = pd.concat(results)
+
+    print(df)
+
+    sb.relplot(data=df, x="Time [s]", y="RTT [us]", hue="Label", kind="line", aspect=2)
     plt.savefig("out2")

@@ -89,7 +89,7 @@ def client_io_partition(t: int, sim: Simulation, event: Event) -> Iterator[Event
 
 
 def client(t: int, sim: Simulation, event: Event) -> Iterator[Event]:
-    t_c = t % (sim.client.major_frame + sim.client.inter_mf_delay)
+    t_c = (t + sim.client_start) % (sim.client.major_frame + sim.client.inter_mf_delay)
     partition: None | Partition = None
     for pw in sim.client.partition_windows:
         pw_start = pw.offset
@@ -125,7 +125,7 @@ def server_io_partition(t: int, sim: Simulation, event: Event) -> Iterator[Event
 
 
 def server(t: int, sim: Simulation, event: Event) -> Iterator[Event]:
-    t_c = t % (sim.server.major_frame + sim.server.inter_mf_delay)
+    t_c = (t + sim.server_start) % (sim.server.major_frame + sim.server.inter_mf_delay)
     partition: None | Partition = None
     for pw in sim.server.partition_windows:
         pw_start = pw.offset
