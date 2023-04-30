@@ -414,8 +414,8 @@ def simulate_rtt() -> None:
     )
     level_jump = create_simulation(
         duration=duration,
-        client_inter_mf_delay=19,
-        server_inter_mf_delay=11,
+        client_inter_mf_delay=0,
+        server_inter_mf_delay=0,
         client_start=1111,
         server_start=0,
     )
