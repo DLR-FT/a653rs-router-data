@@ -246,6 +246,7 @@ def parse_rtt_scenario(path: str | TextIO, name: str) -> DataFrame:
     df = DataFrame(columns=["Scenario", "RTT"])
     rtt = parse_rtt(path)
     df["RTT"] = rtt.where(rtt < 20000).dropna()
+    df["RTT"] = df["RTT"] / 1000
     df["Scenario"] = name
     print(df)
     return df
@@ -257,9 +258,8 @@ def rtt() -> None:
     local = parse_rtt_scenario(argv[2], "Local")
     remote = parse_rtt_scenario(argv[3], "Remote")
     data = pd.concat([direct, local, remote])
-    g = sb.catplot(data=data, x="Scenario", y="RTT", kind="violin", inner=None)
-    sb.stripplot(data=data, x="Scenario", y="RTT", color="k", size=1, ax=g.ax)
-    plt.ylabel("RTT [us]")
+    sb.stripplot(data=data, x="Scenario", y="RTT", color="k", size=1)
+    plt.ylabel("RTT [ms]")
     plt.savefig("out.png")
 
 
