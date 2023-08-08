@@ -258,10 +258,12 @@ def rtt() -> None:
     direct = parse_rtt_scenario(argv[1], "Direct")
     local = parse_rtt_scenario(argv[2], "Local")
     remote = parse_rtt_scenario(argv[3], "Remote")
+    output = argv[4]
     data = pd.concat([direct, local, remote])
+    sb.set_theme(style="whitegrid", palette="gray")
     sb.stripplot(data=data, x="Scenario", y="RTT", color="k", size=1)
     plt.ylabel("RTT [ms]")
-    plt.savefig("out.png")
+    plt.savefig(output)#, backend="pgf")
 
 
 def plot_delays_apex_ports() -> None:
@@ -420,7 +422,7 @@ def simulate_rtt(duration: int=300) -> DataFrame:
     for label, sim in [
         ("Normal", normal),
         ("Different Inter-MAF", large_rtt),
-        ("Different start", level_jump),
+        ("Different starts", level_jump),
     ]:
         dfsim = DataFrame(
             data=zip(range(1, duration + 1), simulate(sim)),
@@ -442,8 +444,24 @@ def plot_simulate_rtt() -> None:
         df = simulate_rtt()
 
     print("Done simulating. Plotting ...")
-    sb.relplot(data=df, x="Time [s]", y="RTT [us]", hue="Label", kind="line", aspect=1)
-    plt.savefig(out_path)
+    sb.set_theme(style="whitegrid", palette="gray")
+    ax = sb.relplot(
+        data=df,
+        x="Time [s]",
+        y="RTT [us]",
+        hue="Label",
+        style="Label",
+        kind="line",
+        aspect=1,
+        facet_kws=dict(legend_out=False),
+    )
+    sb.move_legend(
+        ax, "lower right",
+        bbox_to_anchor=(.7, .18),
+        title=None,
+        frameon=True,
+    )
+    plt.savefig(out_path, backend="pgf")
 
 def csv_simulate_rtt() -> None:
     out_path: Path = argv[1]
