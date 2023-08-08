@@ -263,7 +263,7 @@ def rtt() -> None:
     sb.set_theme(style="whitegrid", palette="gray")
     sb.stripplot(data=data, x="Scenario", y="RTT", color="k", size=1)
     plt.ylabel("RTT [ms]")
-    plt.savefig(output)#, backend="pgf")
+    plt.savefig(output, backend="pgf")
 
 
 def plot_delays_apex_ports() -> None:
