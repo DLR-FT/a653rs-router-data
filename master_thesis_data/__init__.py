@@ -246,7 +246,7 @@ def parse_throughput_scenario(path: str | TextIO, scenario: str) -> DataFrame:
 def parse_rtt_scenario(path: str | TextIO, name: str) -> DataFrame:
     df = DataFrame(columns=["Scenario", "RTT"])
     rtt = parse_rtt(path)
-    df["RTT"] = rtt.where(rtt < 20000).dropna()
+    df["RTT"] = rtt.dropna()
     df["RTT"] = df["RTT"] / 1000
     df["Scenario"] = name
     print(df)
