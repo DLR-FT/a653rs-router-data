@@ -3,6 +3,7 @@ from pandas import DataFrame, Series, read_csv
 from enum import Enum
 from typing import TextIO, TypeVar, Type
 from .simulator import Simulation, Schedule, Partition, PartitionWindow, simulate
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import seaborn as sb
@@ -392,11 +393,7 @@ def create_simulation(
     )
 
 
-def simulate_rtt() -> None:
-    if len(argv) > 1:
-        duration = int(argv[1])
-    else:
-        duration = 300
+def simulate_rtt(duration: int=300) -> DataFrame:
     normal = create_simulation(
         duration=duration,
         client_inter_mf_delay=0,
@@ -422,7 +419,7 @@ def simulate_rtt() -> None:
     results = []
     for label, sim in [
         ("Normal", normal),
-        ("Different Inter-MF", large_rtt),
+        ("Different Inter-MAF", large_rtt),
         ("Different start", level_jump),
     ]:
         dfsim = DataFrame(
@@ -433,7 +430,27 @@ def simulate_rtt() -> None:
         results.append(dfsim)
     df = pd.concat(results)
 
-    print(df)
+    return df
 
-    sb.relplot(data=df, x="Time [s]", y="RTT [us]", hue="Label", kind="line", aspect=2)
-    plt.savefig("out2")
+
+def plot_simulate_rtt() -> None:
+    out_path: Path = argv[1]
+    if len(argv) > 2:
+        duration = int(argv[2])
+        df = simulate_rtt(duration)
+    else:
+        df = simulate_rtt()
+
+    print("Done simulating. Plotting ...")
+    sb.relplot(data=df, x="Time [s]", y="RTT [us]", hue="Label", kind="line", aspect=1)
+    plt.savefig(out_path)
+
+def csv_simulate_rtt() -> None:
+    out_path: Path = argv[1]
+    if len(argv) > 1:
+        duration = int(argv[2])
+        df = simulate_rtt(duration)
+    else:
+        df = simulate_rtt()
+
+    return df.to_csv(out_path)

@@ -78,7 +78,8 @@ delays-apex-ports = "master_thesis_data:plot_delays_apex_ports"
 delays-network = "master_thesis_data:plot_delays_network"
 ipdv = "master_thesis_data:ipdv"
 rtt-timeline = "master_thesis_data:rtt_timeline"
-simulate-rtt = "master_thesis_data:simulate_rtt"
+plot-simulate-rtt = "master_thesis_data:plot_simulate_rtt"
+csv-simulate-rtt = "master_thesis_data:csv_simulate_rtt"
 
 [build-system]
 requires = ["poetry-core"]
