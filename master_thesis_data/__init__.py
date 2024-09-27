@@ -261,7 +261,7 @@ def rtt() -> None:
     output = argv[4]
     data = pd.concat([direct, local, remote])
     sb.set_theme(style="whitegrid", palette="gray")
-    sb.stripplot(data=data, x="Scenario", y="RTT", color="k", size=1)
+    sb.stripplot(data=data, x="Scenario", y="RTT", color="k", size=4, marker="D")
     plt.ylabel("RTT [ms]")
     plt.savefig(output, backend="pgf")
 
